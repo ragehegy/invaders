@@ -1,31 +1,24 @@
 import pygame
 from pygame.locals import *
-import numpy as np
 
-def play_audio(wav):
-    audio = pygame.mixer.Sound(wav)
-    audio.play(-1)
-    timeout = 1
-    # pygame.time.delay(timeout * 1000)
-    # audio.stop()
-    # audio.sleep(timeout)
 
 def load_image(name, colorkey=None):
     try:
         image = pygame.image.load(name)
     except(pygame.error, message):
         print('Cannot load image:' + name)
-    image = image.convert()
+    # image = image.convert()
+    # image = image.convert_alpha()
     return image, image.get_rect()
-
-class Invader(pygame.sprite.Sprite):
+    
+class Player(pygame.sprite.Sprite):
 
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
-        self.image, self.rect = load_image("unicorn.png", -1)
+        self.image, self.rect = load_image("warrior-set/individual-sprite/Run/Warrior_Run_1.png", -1)
         self.origin = self.image
         self.screen = pygame.display.get_surface()
-        self.step = 9
+        self.step = 1
         self.margin = 12
         self.area = self.screen.get_rect()
         self.xsteps = self.step
@@ -131,16 +124,11 @@ class Invader(pygame.sprite.Sprite):
             self.ysteps = 0
             self.direction = "right"
 
-        elif key_pressed[pygame.K_UP] or key_pressed[pygame.K_SPACE]:
-            F = (1 / 2) * self.m * ( self.vel ** 2 )
-            self.ysteps -= int(F) 
-            self.vel = self.vel - 1
-            if self.vel < 0:
-                self.m = -1
-            if self.vel ==-6:
-                self.jumping = False
-                self.vel = 5
-                self.m = 1
+        if key_pressed[pygame.K_UP]:
+            # self.image = pygame.transform.rotate(self.image, -90)
+            self.xsteps = 0
+            self.ysteps = -self.step
+            self.direction = "up"
 
         self.update()
         self.rect = newpos
@@ -166,45 +154,3 @@ class Invader(pygame.sprite.Sprite):
             self.__spin()
         else:
             self.__move()
-
-def main():
-    sound = "sound.wav"
-    pygame.init()
-    clock = pygame.time.Clock()
-    screen = pygame.display.set_mode((400, 400))
-    pygame.display.set_caption("Sprite Demo")
-    # play_audio(sound)
-    background = pygame.Surface(screen.get_size())
-    background = background.convert()
-    background.fill((250, 250, 250))
-
-    if pygame.font:
-        font = pygame.font.Font(None, 18)
-        text = font.render("Hit the avatar!", 1, (0, 0, 200))
-        textpos = text.get_rect(centerx = int(background.get_width()/2), centery = int(background.get_height()/2))
-        background.blit(text, textpos)
-
-    screen.blit(background, (0, 0))
-    pygame.display.flip()
-    clock = pygame.time.Clock()
-    head = Invader()
-    sprite = pygame.sprite.RenderPlain(head)
-    
-    while True:
-        clock.tick(20)
-        for event in pygame.event.get():
-            if event.type == QUIT:
-                return
-            elif event.type == MOUSEBUTTONDOWN:
-                head.hit()
-            elif event.type == KEYDOWN:
-                head.key_move()
-
-        sprite.update()
-        screen.blit(background, (0, 0))
-        # screen.blit(coin.image, coin.rect)
-        sprite.draw(screen)
-        pygame.display.flip()
-
-if __name__ == '__main__':
-    main()
