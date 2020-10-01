@@ -14,14 +14,17 @@ sprite = pygame.sprite.RenderPlain(player)
 
 
 while True:
-    game.clock.tick(100)
+    game.clock.tick(15)
     for event in pygame.event.get():
         if event.type == QUIT:
             quit()
         elif event.type == MOUSEBUTTONDOWN:
             player.hit()
         elif event.type == KEYDOWN:
+            player.state = "running"
             player.key_move()
+        elif event.type == KEYUP:
+            player.state = "idle"
 
     sprite.update()
     screen.fill(game.bgcolor)
