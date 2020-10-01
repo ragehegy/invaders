@@ -4,8 +4,8 @@ import numpy as np
 
 class Game:
     def __init__(self):
-        self.height = 800
-        self.width = 1200
+        self.height = 600
+        self.width = 1000
         self.clock = pygame.time.Clock()
         self.bgcolor = np.random.randint(0, 255, size=(4, 3)) [0]      
         self.img = "invader.gif"
@@ -17,8 +17,7 @@ class Game:
         screen = pygame.display.set_mode((self.width, self.height))
         pygame.display.set_caption(self.caption)
         screen.fill(self.bgcolor)
-        self.play_audio(self.sound)
-        # screen.blit(self.load_image(), (100,100))
+        # self.play_audio(self.sound)
         return screen
 
     def play_audio(self, sound):

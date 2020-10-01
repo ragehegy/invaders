@@ -39,12 +39,11 @@ class Player(pygame.sprite.Sprite):
         self.coins = 0
         self.nhits = 0
         self.nmisses = 0
-        # self.image = pygame.transform.rotate(self.original, self.degrees)
 
     def rect_move(self):
         
         self.current_frame += 1
-        
+
         if self.state == "idle":
             # self.direction = ""
             self.images = load_images("warrior-set/individual-sprite/Idle/", -1)
@@ -56,9 +55,11 @@ class Player(pygame.sprite.Sprite):
             self.images = load_images("warrior-set/individual-sprite/Jump/", -1)
         
         elif self.direction == "right":
+            self.orientation = "right"
             self.images = load_images("warrior-set/individual-sprite/Run/", -1)
 
         elif self.direction == "left":
+            self.orientation = "left"
             self.images = load_images("warrior-set/individual-sprite/Run/", -1)
 
         if self.current_frame >= len(self.images):
@@ -66,8 +67,7 @@ class Player(pygame.sprite.Sprite):
 
         self.image, self.rect = self.images[self.current_frame]
         
-        if self.direction == "left":
-            self.orientation = "left"
+        if self.orientation == "left":
             self.image = pygame.transform.flip(self.image, True, False)
 
     def __move(self):
@@ -76,34 +76,30 @@ class Player(pygame.sprite.Sprite):
             if self.direction == "right":
                 self.image = pygame.transform.rotate(self.origin, -90)
                 if self.rect.right > self.area.right - self.margin:
-                    # self.image = pygame.transform.rotate(self.image, -90)
                     self.xsteps = 0
-                    self.ysteps = self.step
-                    self.direction = "down"
+                    self.ysteps = 0
+                    self.direction = ""
 
             elif self.direction == "down":
                 self.image = pygame.transform.rotate(self.origin, 180)
                 if self.rect.bottom > self.area.bottom - self.margin:
-                    # self.image = pygame.transform.rotate(self.image, -90)
-                    self.xsteps = -self.step
+                    self.xsteps = 0
                     self.ysteps = 0
-                    self.direction = "left"
+                    self.direction = ""
 
             elif self.direction == "left":
                 self.image = pygame.transform.rotate(self.image, 90)
                 if self.rect.left < self.area.left + self.margin:
-                    # self.image = pygame.transform.rotate(self.image, -90)
                     self.xsteps = 0
-                    self.ysteps = -self.step
-                    self.direction = "up"
+                    self.ysteps = 0
+                    self.direction = ""
 
             elif self.direction == "up":
                 self.image = self.origin
                 if self.rect.top < self.area.top + self.margin:
-                    # self.image = pygame.transform.rotate(self.image, -90)
-                    self.xsteps = self.step
+                    self.xsteps = 0
                     self.ysteps = 0
-                    self.direction = "right"
+                    self.direction = ""
         else:
             self.xsteps = 0
             self.ysteps = 0
@@ -117,28 +113,25 @@ class Player(pygame.sprite.Sprite):
         newpos = self.rect.move((self.xsteps, self.ysteps))
 
         if key_pressed[pygame.K_DOWN]:
-            # self.image = pygame.transform.rotate(self.image, -90)
             self.xsteps = 0
             self.ysteps = self.step
             self.direction = "down"
 
         elif key_pressed[pygame.K_LEFT]:
-            # self.image = pygame.transform.rotate(self.image, -90)
             self.xsteps = -self.step
             self.ysteps = 0
             self.direction = "left"
 
         elif key_pressed[pygame.K_RIGHT]:
-            # self.image = pygame.transform.rotate(self.image, -90)
             self.xsteps = self.step
             self.ysteps = 0
             self.direction = "right"
 
         elif key_pressed[pygame.K_UP]:
-            # self.image = pygame.transform.rotate(self.image, -90)
             self.xsteps = 0
             self.ysteps = -self.step
             self.direction = "up"
+
 
         else:
             self.state = "idle"

@@ -14,7 +14,7 @@ sprite = pygame.sprite.RenderPlain(player)
 
 
 while True:
-    game.clock.tick(15)
+    game.clock.tick(13)
     for event in pygame.event.get():
         if event.type == QUIT:
             quit()
