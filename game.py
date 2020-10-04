@@ -7,8 +7,7 @@ class Game:
         self.height = 600
         self.width = 1000
         self.clock = pygame.time.Clock()
-        self.bgcolor = np.random.randint(0, 255, size=(4, 3)) [0]      
-        self.img = "invader.gif"
+        self.bgcolor = np.random.randint(0, 255, size=(4, 3))[0]
         self.sound = "sound.wav"
         self.caption = "Animation Demo"
 

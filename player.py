@@ -30,7 +30,8 @@ class Player(pygame.sprite.Sprite):
         self.area = self.screen.get_rect()
         self.xsteps = self.step
         self.ysteps = 0
-        self.vel = 8
+        self.jumpCount = 10
+        self.vel = 30
         self.state = "idle"
         self.m = 4
         self.degrees = 0
@@ -45,8 +46,11 @@ class Player(pygame.sprite.Sprite):
         self.current_frame += 1
 
         if self.state == "idle":
-            # self.direction = ""
             self.images = load_images("warrior-set/individual-sprite/Idle/", -1)
+
+        elif self.state == "jumping":
+            # self.direction = "up"
+            self.images = load_images("warrior-set/individual-sprite/Jump/", -1)
 
         if self.direction == "down":
             self.images = load_images("warrior-set/individual-sprite/Fall/", -1)
@@ -70,74 +74,38 @@ class Player(pygame.sprite.Sprite):
         if self.orientation == "left":
             self.image = pygame.transform.flip(self.image, True, False)
 
-    def __move(self):
-        newpos = self.rect.move((self.xsteps, self.ysteps))
-        if self.state != "idle":
-            if self.direction == "right":
-                self.image = pygame.transform.rotate(self.origin, -90)
-                if self.rect.right > self.area.right - self.margin:
-                    self.xsteps = 0
-                    self.ysteps = 0
-                    self.direction = ""
-
-            elif self.direction == "down":
-                self.image = pygame.transform.rotate(self.origin, 180)
-                if self.rect.bottom > self.area.bottom - self.margin:
-                    self.xsteps = 0
-                    self.ysteps = 0
-                    self.direction = ""
-
-            elif self.direction == "left":
-                self.image = pygame.transform.rotate(self.image, 90)
-                if self.rect.left < self.area.left + self.margin:
-                    self.xsteps = 0
-                    self.ysteps = 0
-                    self.direction = ""
-
-            elif self.direction == "up":
-                self.image = self.origin
-                if self.rect.top < self.area.top + self.margin:
-                    self.xsteps = 0
-                    self.ysteps = 0
-                    self.direction = ""
-        else:
-            self.xsteps = 0
-            self.ysteps = 0
-            self.direction = ""
-
-        self.rect_move()
-        self.rect = newpos
-
     def key_move(self):
         key_pressed = pygame.key.get_pressed()
         newpos = self.rect.move((self.xsteps, self.ysteps))
-
-        if key_pressed[pygame.K_DOWN]:
-            self.xsteps = 0
+        
+        if key_pressed[pygame.K_SPACE]:
+            self.state = "jumping"
+            if self.jumpCount == 0:
+                self.jumpCount = 10
+                self.state = "running"
+            elif self.jumpCount > 5:
+                self.ysteps = -self.vel
+            elif self.jumpCount < 5:
+                self.ysteps = self.vel
+            self.jumpCount -= 1
+        elif key_pressed[pygame.K_DOWN]:
+            self.state = "running"
             self.ysteps = self.step
             self.direction = "down"
-
-        elif key_pressed[pygame.K_LEFT]:
-            self.xsteps = -self.step
-            self.ysteps = 0
-            self.direction = "left"
-
-        elif key_pressed[pygame.K_RIGHT]:
-            self.xsteps = self.step
-            self.ysteps = 0
-            self.direction = "right"
-
         elif key_pressed[pygame.K_UP]:
-            self.xsteps = 0
+            self.state = "running"
             self.ysteps = -self.step
             self.direction = "up"
-
-
+        elif key_pressed[pygame.K_LEFT]:
+            self.state = "running"
+            self.xsteps = -self.step
+            self.direction = "left"
+        elif key_pressed[pygame.K_RIGHT]:
+            self.state = "running"
+            self.xsteps = self.step
+            self.direction = "right"
         else:
             self.state = "idle"
-
-        self.update()
-        self.rect = newpos
 
     def hit(self):
         # coin.update(self.screen)
@@ -166,7 +134,43 @@ class Player(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(center=center)
 
     def update(self):
-        if self.degrees:
-            self.__spin()
-        else:
-            self.__move()
+        # if self.degrees:
+        #     self.__spin()
+        # else:
+        #     self.__move()
+        newpos = self.rect.move((self.xsteps, self.ysteps))
+        
+        if self.state == "idle":
+            self.xsteps = 0
+            self.ysteps = 0
+            self.direction = ""
+
+        self.current_frame += 1
+
+        if self.state == "idle":
+            self.images = load_images("warrior-set/individual-sprite/Idle/", -1)
+        elif self.state == "jumping":
+            self.images = load_images("warrior-set/individual-sprite/Jump/", -1)
+        if self.direction == "down":
+            self.images = load_images("warrior-set/individual-sprite/Fall/", -1)
+        elif self.direction == "up":
+            self.images = load_images("warrior-set/individual-sprite/Jump/", -1)
+        elif self.direction == "right":
+            self.orientation = "right"
+            self.images = load_images("warrior-set/individual-sprite/Run/", -1)
+        elif self.direction == "left":
+            self.orientation = "left"
+            self.images = load_images("warrior-set/individual-sprite/Run/", -1)
+
+        if self.current_frame >= len(self.images):
+            self.current_frame = 0
+        self.image, self.rect = self.images[self.current_frame]
+        
+        if self.orientation == "left":
+            self.image = pygame.transform.flip(self.image, True, False)
+        self.rect = newpos
+        # self.gravity()
+
+        def gravity(self):
+            if self.state == "jumping":
+                self.ysteps += 3.2
