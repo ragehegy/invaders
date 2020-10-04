@@ -1,20 +1,17 @@
 import pygame
 from pygame.locals import *
-import os
+import pltfrm
 
-def load_image(name, colorkey=None):
-    try:
-        image = pygame.image.load(name)
-    except(pygame.error, message):
-        print('Cannot load image:' + name)
-    # image = image.convert()
-    return image, image.get_rect()    
-
-class Level(pygame.sprite.Sprite):
-
-    def __init__(self):
-        pygame.sprite.Sprite.__init__(self)
-        self.image, self.rect = load_image("warrior-set/tile.png")
-        # self.image = pygame.transform.scale(self.image, (25, 25))
-        self.xpos = 0
-        self.ypos = 0
+class Level:
+    def ground(self, screen_w=0, screen_h=0):
+        ground_list = pygame.sprite.Group()
+        x=0
+        ground_sample = pltfrm.pltfrm()
+        tile_width = ground_sample.rect.size[0]
+        tile_height = ground_sample.rect.size[1]
+        for i in range(int(screen_w/tile_width)):
+            ground_sample = pltfrm.pltfrm(xpos=x, ypos=screen_h-tile_height)
+            ground_list.add(ground_sample)
+            x += 50
+        ground_list.add(pltfrm.pltfrm(xpos=300, ypos=300))
+        return ground_list

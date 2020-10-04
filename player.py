@@ -31,111 +31,64 @@ class Player(pygame.sprite.Sprite):
         self.xsteps = self.step
         self.ysteps = 0
         self.jumpCount = 20
-        self.vel = 30
+        self.vel = 10
         self.state = "idle"
-        self.m = 1
+        self.m = 2
+        self.hitting = 0
         self.degrees = 0
         self.direction = ""
         self.orientation = "right"
         self.coins = 0
-        self.nhits = 0
-        self.nmisses = 0
-
-    def rect_move(self):
-        
-        self.current_frame += 1
-
-        if self.state == "idle":
-            self.images = load_images("warrior-set/individual-sprite/Idle/", -1)
-
-        elif self.state == "jumping":
-            # self.direction = "up"
-            self.images = load_images("warrior-set/individual-sprite/Jump/", -1)
-
-        if self.direction == "down":
-            self.images = load_images("warrior-set/individual-sprite/Fall/", -1)
-
-        elif self.direction == "up":
-            self.images = load_images("warrior-set/individual-sprite/Jump/", -1)
-        
-        elif self.direction == "right":
-            self.orientation = "right"
-            self.images = load_images("warrior-set/individual-sprite/Run/", -1)
-
-        elif self.direction == "left":
-            self.orientation = "left"
-            self.images = load_images("warrior-set/individual-sprite/Run/", -1)
-
-        if self.current_frame >= len(self.images):
-            self.current_frame = 0
-
-        self.image, self.rect = self.images[self.current_frame]
-        
-        if self.orientation == "left":
-            self.image = pygame.transform.flip(self.image, True, False)
 
     def jump(self):
         self.state = "jumping"
-        if self.jumpCount > 0:
-            if self.jumpCount > 10:
-                self.ysteps = -self.vel
-            elif self.jumpCount <= 10:
-                self.ysteps = self.vel
-            self.vel -= 2
+        if self.vel > 0:
+                F = ( 0.25 * self.m * (self.vel*self.vel) )
         else:
-            self.state = "running"
-            self.jumpCount = 20
-        self.jumpCount -= 1
+            F = -( 0.25 * self.m * (self.vel*self.vel) )
+        self.ysteps = - F
+        self.vel = self.vel - 1
+        # else:
+        #     self.state = "running"
+        #     self.jumpCount = 20
+        # self.jumpCount -= 1
 
-    def gravity(self):
-        if self.rect.top <= 500:
+    def gravity(self, ground=pygame.sprite.Group()):
+        collided = pygame.sprite.spritecollide(self, ground, False)
+        if not collided:
             self.ysteps += self.step
         else:
-            self.rect.top = 500
-            self.jumpCount = 20
-            self.vel = 30
+            if self.rect.bottom > collided[0].rect.y:
+                self.rect.bottom = collided[0].rect.y
+            else:
+                self.ysteps = 0
+            # self.jumpCount = 20
+            self.vel = 10
 
     def key_move(self):
-        print(self.rect.top)
         key_pressed = pygame.key.get_pressed()
         newpos = self.rect.move((self.xsteps, self.ysteps))
-        
-        # if key_pressed[pygame.K_SPACE]:
-            
-        if key_pressed[pygame.K_DOWN]:
-            self.state = "running"
-            self.ysteps = self.step
+        self.state = "running"
+        if key_pressed[pygame.K_x]:
+            self.hit()
+        elif key_pressed[pygame.K_DOWN]:
+            self.ysteps = self.step * 2
             self.direction = "down"
         elif key_pressed[pygame.K_UP]:
-            self.state = "running"
             self.ysteps = -self.step
             self.direction = "up"
         elif key_pressed[pygame.K_LEFT]:
-            self.state = "running"
             self.xsteps = -self.step
             self.direction = "left"
         elif key_pressed[pygame.K_RIGHT]:
-            self.state = "running"
             self.xsteps = self.step
             self.direction = "right"
         else:
             self.state = "idle"
 
     def hit(self):
-        # coin.update(self.screen)
-        mousex, mousey = pygame.mouse.get_pos()
-        collide = False
-        bigger_rect = self.rect.inflate(40,40)
-        if bigger_rect.collidepoint(mousex, mousey):
-            collide = True
-        if not self.degrees and collide:
-            self.degrees = 1
-            self.original = self.image
-            self.nhits += 1
-            print("hits: %d" %self.nhits)
-        else:
-            self.nmisses += 1
-            print("misses: %d" %self.nmisses)
+        self.hitting = 1
+        self.xsteps = 0
 
     def __spin(self):
         center = self.rect.center
@@ -148,10 +101,6 @@ class Player(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(center=center)
 
     def update(self):
-        # if self.degrees:
-        #     self.__spin()
-        # else:
-        #     self.__move()
         newpos = self.rect.move((self.xsteps, self.ysteps))
         
         if self.state == "idle":
@@ -160,7 +109,7 @@ class Player(pygame.sprite.Sprite):
             self.direction = ""
 
         self.current_frame += 1
-
+        
         if self.state == "idle":
             self.images = load_images("warrior-set/individual-sprite/Idle/", -1)
         elif self.state == "jumping":
@@ -175,6 +124,9 @@ class Player(pygame.sprite.Sprite):
         elif self.direction == "left":
             self.orientation = "left"
             self.images = load_images("warrior-set/individual-sprite/Run/", -1)
+        
+        if self.hitting == 1:
+            self.images = load_images("warrior-set/individual-sprite/Attack/", -1)
 
         if self.current_frame >= len(self.images):
             self.current_frame = 0
@@ -183,5 +135,5 @@ class Player(pygame.sprite.Sprite):
         if self.orientation == "left":
             self.image = pygame.transform.flip(self.image, True, False)
         self.rect = newpos
-        self.gravity()
+        # self.gravity()
 

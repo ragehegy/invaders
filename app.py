@@ -9,16 +9,15 @@ game = game.Game()
 screen = game.init()
 player = player.Player()
 
-# level = level.Level()
-# level.rect.top = game.height - level.rect.size[0]
+level = level.Level()
+tiles = level.ground(game.width, game.height)
 
 screen.blit(player.image, player.rect)
-# screen.blit(level.image, level.rect)
+# screen.blit(platform.image, platform.rect)
 
 game_text, textpos = game.game_text()
 screen.blit(game_text, textpos)
 sprite = pygame.sprite.RenderPlain(player)
-# lvl_sprite = pygame.sprite.RenderPlain(level)
 
 
 while True:
@@ -26,7 +25,9 @@ while True:
     if keys[K_ESCAPE]:
         quit()
     if 1 in keys:
-            player.key_move()
+        # if keys[K_x]:
+        #     player.hit()
+        player.key_move()
     else:
         player.state = "idle"
     game.clock.tick(13)
@@ -36,23 +37,23 @@ while True:
             quit()
         elif event.type == MOUSEBUTTONDOWN:
             player.hit()
-        elif event.type == KEYDOWN and event.key == pygame.K_SPACE:
-            player.jump()
-        # elif event.type == KEYDOWN:
-        #     if keys[pygame.K_SPACE]:
-        #         player.state = "jumping"
-        #         player.jump()
+        elif event.type == KEYDOWN:
+            if event.key == pygame.K_SPACE:
+                player.jump()
+            # elif event.key == pygame.K_x:
+            #     player.hit()
         #     elif keys[K_UP] or keys[K_DOWN] or keys[K_LEFT] or keys[K_RIGHT]:
         #         player.state = "running"
         #         player.key_move()
         elif event.type == KEYUP:
             player.state = "idle"
+            player.hitting = 0
 
     player.update()
-    # player.gravity()
+    player.gravity(tiles)
     screen.fill(game.bgcolor)
     # draw tiles
     # pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(20, 550, 960, 20), 0)
     sprite.draw(screen)
-    # lvl_sprite.draw(screen)
+    tiles.draw(screen)
     pygame.display.flip()
