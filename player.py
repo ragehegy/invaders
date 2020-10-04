@@ -30,10 +30,10 @@ class Player(pygame.sprite.Sprite):
         self.area = self.screen.get_rect()
         self.xsteps = self.step
         self.ysteps = 0
-        self.jumpCount = 10
+        self.jumpCount = 20
         self.vel = 30
         self.state = "idle"
-        self.m = 4
+        self.m = 1
         self.degrees = 0
         self.direction = ""
         self.orientation = "right"
@@ -74,21 +74,35 @@ class Player(pygame.sprite.Sprite):
         if self.orientation == "left":
             self.image = pygame.transform.flip(self.image, True, False)
 
+    def jump(self):
+        self.state = "jumping"
+        if self.jumpCount > 0:
+            if self.jumpCount > 10:
+                self.ysteps = -self.vel
+            elif self.jumpCount <= 10:
+                self.ysteps = self.vel
+            self.vel -= 2
+        else:
+            self.state = "running"
+            self.jumpCount = 20
+        self.jumpCount -= 1
+
+    def gravity(self):
+        if self.rect.top <= 500:
+            self.ysteps += self.step
+        else:
+            self.rect.top = 500
+            self.jumpCount = 20
+            self.vel = 30
+
     def key_move(self):
+        print(self.rect.top)
         key_pressed = pygame.key.get_pressed()
         newpos = self.rect.move((self.xsteps, self.ysteps))
         
-        if key_pressed[pygame.K_SPACE]:
-            self.state = "jumping"
-            if self.jumpCount == 0:
-                self.jumpCount = 10
-                self.state = "running"
-            elif self.jumpCount > 5:
-                self.ysteps = -self.vel
-            elif self.jumpCount < 5:
-                self.ysteps = self.vel
-            self.jumpCount -= 1
-        elif key_pressed[pygame.K_DOWN]:
+        # if key_pressed[pygame.K_SPACE]:
+            
+        if key_pressed[pygame.K_DOWN]:
             self.state = "running"
             self.ysteps = self.step
             self.direction = "down"
@@ -169,8 +183,5 @@ class Player(pygame.sprite.Sprite):
         if self.orientation == "left":
             self.image = pygame.transform.flip(self.image, True, False)
         self.rect = newpos
-        # self.gravity()
+        self.gravity()
 
-        def gravity(self):
-            if self.state == "jumping":
-                self.ysteps += 3.2

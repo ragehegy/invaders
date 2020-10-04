@@ -23,6 +23,8 @@ sprite = pygame.sprite.RenderPlain(player)
 
 while True:
     keys = pygame.key.get_pressed()
+    if keys[K_ESCAPE]:
+        quit()
     if 1 in keys:
             player.key_move()
     else:
@@ -34,6 +36,8 @@ while True:
             quit()
         elif event.type == MOUSEBUTTONDOWN:
             player.hit()
+        elif event.type == KEYDOWN and event.key == pygame.K_SPACE:
+            player.jump()
         # elif event.type == KEYDOWN:
         #     if keys[pygame.K_SPACE]:
         #         player.state = "jumping"
@@ -43,7 +47,6 @@ while True:
         #         player.key_move()
         elif event.type == KEYUP:
             player.state = "idle"
-            player.jumpCount = 20
 
     player.update()
     # player.gravity()
