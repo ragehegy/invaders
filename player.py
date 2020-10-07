@@ -1,6 +1,7 @@
 import pygame
 from pygame.locals import *
 import os
+import widget
 
 def load_images(dir, colorkey=None):
     arr = []
@@ -41,46 +42,48 @@ class Player(pygame.sprite.Sprite):
         self.coins = 0
 
     def jump(self):
-        self.state = "jumping"
-        if self.vel > 0:
-                F = ( 0.25 * self.m * (self.vel*self.vel) )
-        else:
-            F = -( 0.25 * self.m * (self.vel*self.vel) )
+        # self.state = "jumping"
+        # if self.vel > 0:
+        #     F = ( 0.25 * self.m * (self.vel*self.vel) )
+        # else:
+        #     F = -( 0.25 * self.m * (self.vel*self.vel) )
+        F = ( 0.25 * self.m * (self.vel*self.vel) )
         self.ysteps = - F
         self.vel = self.vel - 1
-        # else:
-        #     self.state = "running"
-        #     self.jumpCount = 20
-        # self.jumpCount -= 1
 
     def gravity(self, ground=pygame.sprite.Group()):
         collided = pygame.sprite.spritecollide(self, ground, False)
         if not collided:
             self.ysteps += self.step
         else:
-            if self.rect.bottom > collided[0].rect.y:
-                self.rect.bottom = collided[0].rect.y
+            if self.rect.bottom > collided[0].rect.bottom and self.rect.top >= collided[0].rect.top:
+                self.rect.top = collided[0].rect.bottom
+            elif self.rect.bottom > collided[0].rect.top:
+                self.rect.bottom = collided[0].rect.top
             else:
                 self.ysteps = 0
-            # self.jumpCount = 20
             self.vel = 10
 
     def key_move(self):
+        if self.state == "dead":
+            return
         key_pressed = pygame.key.get_pressed()
-        newpos = self.rect.move((self.xsteps, self.ysteps))
+        mouse = pygame.mouse.get_pressed()
         self.state = "running"
-        if key_pressed[pygame.K_x]:
+        if key_pressed[pygame.K_x] or mouse[0]:
             self.hit()
-        elif key_pressed[pygame.K_DOWN]:
+        # if key_pressed[pygame.K_z] or mouse[1]:
+        #     self.throw()
+        elif key_pressed[pygame.K_DOWN] or key_pressed[pygame.K_s]:
             self.ysteps = self.step * 2
             self.direction = "down"
-        elif key_pressed[pygame.K_UP]:
+        elif key_pressed[pygame.K_UP] or key_pressed[pygame.K_w]:
             self.ysteps = -self.step
             self.direction = "up"
-        elif key_pressed[pygame.K_LEFT]:
+        elif key_pressed[pygame.K_LEFT] or key_pressed[pygame.K_a]:
             self.xsteps = -self.step
             self.direction = "left"
-        elif key_pressed[pygame.K_RIGHT]:
+        elif key_pressed[pygame.K_RIGHT] or key_pressed[pygame.K_d]:
             self.xsteps = self.step
             self.direction = "right"
         else:
@@ -89,6 +92,11 @@ class Player(pygame.sprite.Sprite):
     def hit(self):
         self.hitting = 1
         self.xsteps = 0
+
+    def throw(self, widget=widget.Widget()):
+        widget.rect.x = self.rect.left + 15
+        widget.rect.y = self.rect.y + 15
+        widget.active = True
 
     def __spin(self):
         center = self.rect.center
@@ -124,12 +132,18 @@ class Player(pygame.sprite.Sprite):
         elif self.direction == "left":
             self.orientation = "left"
             self.images = load_images("warrior-set/individual-sprite/Run/", -1)
+        if self.state == "dead":
+            self.images = load_images("warrior-set/individual-sprite/Death-Effect/", -1)
+            self.xsteps = 0
         
         if self.hitting == 1:
             self.images = load_images("warrior-set/individual-sprite/Attack/", -1)
 
         if self.current_frame >= len(self.images):
-            self.current_frame = 0
+            if self.state == "dead":
+                self.current_frame = len(self.images)-1
+            else:
+                self.current_frame = 0
         self.image, self.rect = self.images[self.current_frame]
         
         if self.orientation == "left":
