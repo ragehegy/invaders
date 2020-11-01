@@ -62,7 +62,8 @@ while True:
 
     player.update()
     enemy.update()
-    player.gravity(lvl_tiles)
+    player.gravity()
+    player.detect_collision(lvl_tiles)
     player.rect.clamp_ip(screen.get_rect())
     enemy.rect.clamp_ip(screen.get_rect())
 

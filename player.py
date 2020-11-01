@@ -39,6 +39,7 @@ class Player(pygame.sprite.Sprite):
         self.orientation = "right"
         self.coins = 0
         self.F = ( 0.25 * self.m * pow(self.vel, 2) )
+        self.collision = ""
 
     def jump(self):
         # if self.vel > 0:
@@ -48,18 +49,49 @@ class Player(pygame.sprite.Sprite):
         self.ysteps = -self.F
         self.vel -= 1
 
-    def gravity(self, ground=pygame.sprite.Group()):
-        collided = pygame.sprite.spritecollide(self, ground, False)
-        if not collided:
+    def detect_collision(self, tiles=pygame.sprite.Group()):
+        collision_sides = {
+            "right": 0,
+            "left": 0,
+            "top": 0,
+            "bottom": 0,
+        }
+        collided = pygame.sprite.spritecollide(self, tiles, False)
+        for collision in collided:
+            if collision.rect.collidepoint(self.rect.midright):
+                collision_sides["right"] = 1
+                self.xsteps = 0
+                self.rect.right = collision.rect.left
+            if collision.rect.collidepoint(self.rect.midleft):
+                collision_sides["left"] = 1
+                self.xsteps = 0
+                self.rect.left = collision.rect.right
+            if collision.rect.collidepoint(self.rect.midbottom):
+                collision_sides["bottom"] = 1
+                self.ysteps = 0
+                self.vel = 10
+                self.rect.bottom = collision.rect.top
+            if collision.rect.collidepoint(self.rect.midtop):
+                collision_sides["top"] = 1
+                self.ysteps = 0
+                self.vel = 10
+                self.rect.top = collision.rect.bottom
+        return collision_sides
+    
+    def gravity(self):
+        collisions = self.detect_collision()
+        if collisions["bottom"] == 0:
             self.ysteps += self.step
-        else:
-            self.ysteps = 0
-            # print("collided. \nself:{},{}, \ncollided:{},{}\n------------------------------".format(self.rect.bottom, self.rect.top, collided[0].rect.bottom, collided[0].rect.top))
-            if self.rect.bottom-self.F <= collided[0].rect.bottom:
-                self.rect.bottom = collided[0].rect.top
-            elif self.rect.top >= collided[0].rect.top :
-                self.rect.top = collided[0].rect.bottom
-            self.vel = 10
+        # if not collided:
+        #     self.ysteps += self.step
+        # else:
+        #     self.ysteps = 0
+        #     # print("collided. \nself:{},{}, \ncollided:{},{}\n------------------------------".format(self.rect.bottom, self.rect.top, collided[0].rect.bottom, collided[0].rect.top))
+        #     # if self.rect.bottom-self.F <= collided[0].rect.bottom:
+        #     #     self.rect.bottom = collided[0].rect.top
+        #     # elif self.rect.top >= collided[0].rect.top :
+        #     #     self.rect.top = collided[0].rect.bottom
+        #     self.vel = 10
 
     def key_move(self):
         if self.state == "dead":
