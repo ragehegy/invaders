@@ -8,6 +8,7 @@ class Game:
         self.width = 1000
         self.clock = pygame.time.Clock()
         self.bgcolor = np.random.randint(0, 255, size=(4, 3))[0]
+        self.bgimg = pygame.image.load("warrior-set/bg.png")
         self.sound = "sound.wav"
         self.caption = "Animation Demo"
 
@@ -16,6 +17,7 @@ class Game:
         screen = pygame.display.set_mode((self.width, self.height))
         pygame.display.set_caption(self.caption)
         screen.fill(self.bgcolor)
+        screen.blit(self.bgimg, (0,0))
         # self.play_audio(self.sound)
         return screen
 

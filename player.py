@@ -13,8 +13,6 @@ def load_images(dir, colorkey=None):
         image = pygame.image.load(dir+i)
         image = pygame.transform.scale2x(image)
         arr.append([image, image.get_rect()])
-    # image = image.convert()
-    # image = image.convert_alpha()
     return arr
     
 class Player(pygame.sprite.Sprite):
@@ -40,28 +38,27 @@ class Player(pygame.sprite.Sprite):
         self.direction = ""
         self.orientation = "right"
         self.coins = 0
+        self.F = ( 0.25 * self.m * pow(self.vel, 2) )
 
     def jump(self):
-        # self.state = "jumping"
         # if self.vel > 0:
-        #     F = ( 0.25 * self.m * (self.vel*self.vel) )
+        #     self.F = ( 0.25 * self.m * (self.vel*self.vel) )
         # else:
-        #     F = -( 0.25 * self.m * (self.vel*self.vel) )
-        F = ( 0.25 * self.m * (self.vel*self.vel) )
-        self.ysteps = - F
-        self.vel = self.vel - 1
+        #     self.F = -( 0.25 * self.m * (self.vel*self.vel) )
+        self.ysteps = -self.F
+        self.vel -= 1
 
     def gravity(self, ground=pygame.sprite.Group()):
         collided = pygame.sprite.spritecollide(self, ground, False)
         if not collided:
             self.ysteps += self.step
         else:
-            if self.rect.bottom > collided[0].rect.bottom and self.rect.top >= collided[0].rect.top:
-                self.rect.top = collided[0].rect.bottom
-            elif self.rect.bottom > collided[0].rect.top:
+            self.ysteps = 0
+            # print("collided. \nself:{},{}, \ncollided:{},{}\n------------------------------".format(self.rect.bottom, self.rect.top, collided[0].rect.bottom, collided[0].rect.top))
+            if self.rect.bottom-self.F <= collided[0].rect.bottom:
                 self.rect.bottom = collided[0].rect.top
-            else:
-                self.ysteps = 0
+            elif self.rect.top >= collided[0].rect.top :
+                self.rect.top = collided[0].rect.bottom
             self.vel = 10
 
     def key_move(self):
@@ -149,5 +146,4 @@ class Player(pygame.sprite.Sprite):
         if self.orientation == "left":
             self.image = pygame.transform.flip(self.image, True, False)
         self.rect = newpos
-        # self.gravity()
 

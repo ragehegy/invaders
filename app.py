@@ -16,24 +16,17 @@ widget = widget.Widget()
 enemy.rect.top = 450
 enemy.rect.left = 600
 
-level = level.Level()
-tiles = level.ground(game.width, game.height)
+level = level.Level(game.width, game.height)
+lvl_tiles = level.build()
 enemy_group = pygame.sprite.Group()
 enemy_group.add(enemy)
-
-# screen.blit(player.image, player.rect)
-# screen.blit(enemy.image, enemy.rect)
-# screen.blit(platform.image, platform.rect)
 
 game_text, textpos = game.game_text()
 screen.blit(game_text, textpos)
 sprite = pygame.sprite.RenderPlain(player)
 wsprite = pygame.sprite.RenderPlain(widget)
-# enemy_sprite = pygame.sprite.RenderPlain(enemy)
-
 
 while True:
-    enemy.move()
     keys = pygame.key.get_pressed()
     mouse = pygame.mouse.get_pressed()
     if keys[K_ESCAPE]:
@@ -54,6 +47,8 @@ while True:
         elif event.type == KEYUP or event.type == MOUSEBUTTONUP:
             player.state = "idle"
             player.hitting = 0
+
+    # collisions
     widget_collide = pygame.sprite.spritecollide(widget, enemy_group, True)
     if widget_collide:
         widget.active = False
@@ -64,19 +59,20 @@ while True:
             enemy_group.remove(collided[0])
         else:
             player.state = "dead"
+
     player.update()
     enemy.update()
-    player.gravity(tiles)
+    player.gravity(lvl_tiles)
     player.rect.clamp_ip(screen.get_rect())
     enemy.rect.clamp_ip(screen.get_rect())
-    screen.fill(game.bgcolor)
-    # draw tiles
+
+    # screen.fill(game.bgcolor)
+    screen.blit(game.bgimg, (0,0))
     if widget.active == True:
-        # screen.blit(widget.image, widget.rect)
         wsprite.draw(screen)
         widget.move()
+    enemy.move()
     sprite.draw(screen)
-    # enemy_sprite.draw(screen)
-    tiles.draw(screen)
+    lvl_tiles.draw(screen)
     enemy_group.draw(screen)
     pygame.display.flip()
