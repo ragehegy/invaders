@@ -10,10 +10,8 @@ def load_images(dir, colorkey=None):
         print('Cannot load images dir:' + dir)
     for i in images:
         image = pygame.image.load(dir+i)
-        # image = pygame.transform.scale2x(image)
+        image = image.convert_alpha()
         arr.append([image, image.get_rect()])
-    # image = image.convert()
-    # image = image.convert_alpha()
     return arr
     
 class Enemy(pygame.sprite.Sprite):

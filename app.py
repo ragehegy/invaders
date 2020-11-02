@@ -13,10 +13,10 @@ player = player.Player()
 enemy = enemy.Enemy()
 widget = widget.Widget()
 
-enemy.rect.top = 450
+enemy.rect.top = 650
 enemy.rect.left = 600
 
-level = level.Level(game.width, game.height)
+level = level.Level(game.dimensions[0], game.dimensions[1])
 lvl_tiles = level.build()
 enemy_group = pygame.sprite.Group()
 enemy_group.add(enemy)
@@ -49,10 +49,10 @@ while True:
             player.hitting = 0
 
     # collisions
-    widget_collide = pygame.sprite.spritecollide(widget, enemy_group, True)
+    widget_collide = pygame.sprite.spritecollide(widget, enemy_group, True, pygame.sprite.collide_mask )
     if widget_collide:
         widget.active = False
-    collided = pygame.sprite.spritecollide(player, enemy_group, False)
+    collided = pygame.sprite.spritecollide(player, enemy_group, False, pygame.sprite.collide_mask )
     if collided:
         if player.hitting == 1:
             enemy.state == "dead"
@@ -61,10 +61,10 @@ while True:
             player.state = "dead"
 
     player.update()
-    enemy.update()
     player.gravity()
     player.detect_collision(lvl_tiles)
     player.rect.clamp_ip(screen.get_rect())
+    enemy.update()
     enemy.rect.clamp_ip(screen.get_rect())
 
     # screen.fill(game.bgcolor)
@@ -76,4 +76,5 @@ while True:
     sprite.draw(screen)
     lvl_tiles.draw(screen)
     enemy_group.draw(screen)
+    screen.blit(game_text, textpos)
     pygame.display.flip()

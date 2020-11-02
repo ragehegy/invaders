@@ -12,6 +12,7 @@ def load_images(dir, colorkey=None):
     for i in images:
         image = pygame.image.load(dir+i)
         image = pygame.transform.scale2x(image)
+        image = image.convert_alpha()
         arr.append([image, image.get_rect()])
     return arr
     
@@ -35,17 +36,18 @@ class Player(pygame.sprite.Sprite):
         self.m = 2
         self.hitting = 0
         self.degrees = 0
-        self.direction = ""
+        self.direction = {
+                "right": 0,
+                "left": 0,
+                "top": 0,
+                "bottom": 0,
+            }
         self.orientation = "right"
         self.coins = 0
         self.F = ( 0.25 * self.m * pow(self.vel, 2) )
         self.collision = ""
 
     def jump(self):
-        # if self.vel > 0:
-        #     self.F = ( 0.25 * self.m * (self.vel*self.vel) )
-        # else:
-        #     self.F = -( 0.25 * self.m * (self.vel*self.vel) )
         self.ysteps = -self.F
         self.vel -= 1
 
@@ -56,8 +58,9 @@ class Player(pygame.sprite.Sprite):
             "top": 0,
             "bottom": 0,
         }
-        collided = pygame.sprite.spritecollide(self, tiles, False)
+        collided = pygame.sprite.spritecollide(self, tiles, False, pygame.sprite.collide_mask )
         for collision in collided:
+            # print(self.rect.top , collision.rect.bottom)
             if collision.rect.collidepoint(self.rect.midright):
                 collision_sides["right"] = 1
                 self.xsteps = 0
@@ -66,12 +69,12 @@ class Player(pygame.sprite.Sprite):
                 collision_sides["left"] = 1
                 self.xsteps = 0
                 self.rect.left = collision.rect.right
-            if collision.rect.collidepoint(self.rect.midbottom):
+            if self.rect.bottom + self.F >= collision.rect.top:
                 collision_sides["bottom"] = 1
                 self.ysteps = 0
                 self.vel = 10
                 self.rect.bottom = collision.rect.top
-            if collision.rect.collidepoint(self.rect.midtop):
+            elif self.rect.top-10 <= collision.rect.bottom:
                 collision_sides["top"] = 1
                 self.ysteps = 0
                 self.vel = 10
@@ -82,18 +85,14 @@ class Player(pygame.sprite.Sprite):
         collisions = self.detect_collision()
         if collisions["bottom"] == 0:
             self.ysteps += self.step
-        # if not collided:
-        #     self.ysteps += self.step
-        # else:
-        #     self.ysteps = 0
-        #     # print("collided. \nself:{},{}, \ncollided:{},{}\n------------------------------".format(self.rect.bottom, self.rect.top, collided[0].rect.bottom, collided[0].rect.top))
-        #     # if self.rect.bottom-self.F <= collided[0].rect.bottom:
-        #     #     self.rect.bottom = collided[0].rect.top
-        #     # elif self.rect.top >= collided[0].rect.top :
-        #     #     self.rect.top = collided[0].rect.bottom
-        #     self.vel = 10
 
     def key_move(self):
+        direction = {
+            "right": 0,
+            "left": 0,
+            "top": 0,
+            "bottom": 0,
+        }
         if self.state == "dead":
             return
         key_pressed = pygame.key.get_pressed()
@@ -103,20 +102,21 @@ class Player(pygame.sprite.Sprite):
             self.hit()
         # if key_pressed[pygame.K_z] or mouse[1]:
         #     self.throw()
-        elif key_pressed[pygame.K_DOWN] or key_pressed[pygame.K_s]:
+        if key_pressed[pygame.K_DOWN] or key_pressed[pygame.K_s]:
             self.ysteps = self.step * 2
-            self.direction = "down"
-        elif key_pressed[pygame.K_UP] or key_pressed[pygame.K_w]:
+            direction["bottom"] = 1
+        if key_pressed[pygame.K_UP] or key_pressed[pygame.K_w]:
             self.ysteps = -self.step
-            self.direction = "up"
-        elif key_pressed[pygame.K_LEFT] or key_pressed[pygame.K_a]:
+            direction["top"] = 1
+        if key_pressed[pygame.K_LEFT] or key_pressed[pygame.K_a]:
             self.xsteps = -self.step
-            self.direction = "left"
-        elif key_pressed[pygame.K_RIGHT] or key_pressed[pygame.K_d]:
+            direction["left"] = 1
+        if key_pressed[pygame.K_RIGHT] or key_pressed[pygame.K_d]:
             self.xsteps = self.step
-            self.direction = "right"
-        else:
+            direction["right"] = 1
+        if not key_pressed:
             self.state = "idle"
+        self.direction = direction
 
     def hit(self):
         self.hitting = 1
@@ -143,26 +143,32 @@ class Player(pygame.sprite.Sprite):
         if self.state == "idle":
             self.xsteps = 0
             self.ysteps = 0
-            self.direction = ""
+            self.direction = {
+                "right": 0,
+                "left": 0,
+                "top": 0,
+                "bottom": 0,
+            }
 
         self.current_frame += 1
         
         if self.state == "idle":
             self.images = load_images("warrior-set/individual-sprite/Idle/", -1)
-        elif self.state == "jumping":
-            self.images = load_images("warrior-set/individual-sprite/Jump/", -1)
-        if self.direction == "down":
-            self.images = load_images("warrior-set/individual-sprite/Fall/", -1)
-        elif self.direction == "up":
-            self.images = load_images("warrior-set/individual-sprite/Jump/", -1)
-        elif self.direction == "right":
+        if self.direction["right"] == 1:
             self.orientation = "right"
             self.images = load_images("warrior-set/individual-sprite/Run/", -1)
-        elif self.direction == "left":
+        if self.direction["left"] == 1:
             self.orientation = "left"
             self.images = load_images("warrior-set/individual-sprite/Run/", -1)
+        elif self.state == "jumping":
+            self.images = load_images("warrior-set/individual-sprite/Jump/", -1)
+        if self.direction["bottom"] == 1:
+            self.images = load_images("warrior-set/individual-sprite/Fall/", -1)
+        if self.direction["top"] == 1:
+            self.images = load_images("warrior-set/individual-sprite/Jump/", -1)
         if self.state == "dead":
             self.images = load_images("warrior-set/individual-sprite/Death-Effect/", -1)
+            # self.images = load_images("warrior-set/individual-sprite/Hurt-Effect/", -1)
             self.xsteps = 0
         
         if self.hitting == 1:

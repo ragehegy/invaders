@@ -22,5 +22,11 @@ class Level:
     def build(self):
         self.ground()
         _sample = pltfrm.pltfrm(xpos=300, ypos=300)
-        self.tiles.add(pltfrm.pltfrm(xpos=300, ypos=300), pltfrm.pltfrm(xpos=350, ypos=500))
+        tile_width, tile_height = _sample.rect.size[0], _sample.rect.height
+        self.tiles.add(
+            pltfrm.pltfrm(xpos=300, ypos=300), 
+            pltfrm.pltfrm(xpos=350, ypos=500), 
+            pltfrm.pltfrm(xpos=300, ypos=self.screen_h-(2*tile_height)), 
+            pltfrm.pltfrm(xpos=350, ypos=self.screen_h-(2*tile_height)),
+        )
         return self.tiles
