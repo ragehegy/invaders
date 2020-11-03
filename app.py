@@ -40,13 +40,15 @@ while True:
         if event.type == QUIT:
             quit()
         elif event.type == KEYDOWN:
-            if event.key == pygame.K_SPACE:
-                player.jump()
+            # if event.key == pygame.K_SPACE:
+            #     player.jump()
             if event.key == pygame.K_z:
                 player.throw(widget)
         elif event.type == KEYUP or event.type == MOUSEBUTTONUP:
             player.state = "idle"
             player.hitting = 0
+            if event.key == pygame.K_SPACE:
+                player.jumpCount = 6
 
     # collisions
     widget_collide = pygame.sprite.spritecollide(widget, enemy_group, True, pygame.sprite.collide_mask )
@@ -60,9 +62,7 @@ while True:
         else:
             player.state = "dead"
 
-    player.update()
-    player.gravity()
-    player.detect_collision(lvl_tiles)
+    player.update(lvl_tiles)
     player.rect.clamp_ip(screen.get_rect())
     enemy.update()
     enemy.rect.clamp_ip(screen.get_rect())
