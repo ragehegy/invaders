@@ -8,7 +8,7 @@ def load_image(name, colorkey=None):
     except(pygame.error, message):
         print('Cannot load image:' + name)
     image = pygame.transform.scale(image, (50, 50))
-    image = image.convert_alpha()
+    # image = image.convert_alpha()
     return image, image.get_rect()    
 
 class pltfrm(pygame.sprite.Sprite):

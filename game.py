@@ -13,10 +13,14 @@ class Game:
         self.caption = "Invaders"
         self.captions = ["Press x to attack", "Press z to throw"]
         self.display_info = ""
+        self.icon = pygame.image.load("zero.png")
 
     def init(self):
         pygame.init()
         screen = pygame.display.set_mode((1000,600))
+        self.icon.convert_alpha()
+        # self.icon.set_colorkey((255,255,255))
+        pygame.display.set_icon(self.icon)
         # screen = pygame.display.set_mode((0,0), pygame.FULLSCREEN)
         pygame.display.set_caption(self.caption)
         self.display_info = pygame.display.Info()

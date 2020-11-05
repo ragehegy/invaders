@@ -17,6 +17,11 @@ class Level:
             ground_sample = pltfrm.pltfrm(xpos=x, ypos=self.screen_h-tile_height)
             self.tiles.add(ground_sample)
             x += 50
+        x = 100
+        for i in range(int(self.screen_h/tile_height)):
+            wall_sample = pltfrm.pltfrm(xpos=0, ypos=x)
+            self.tiles.add(wall_sample)
+            x += 50
         return self.tiles
     
     def build(self):

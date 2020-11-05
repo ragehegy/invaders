@@ -11,8 +11,9 @@ def load_images(dir, colorkey=None):
         print('Cannot load images dir:' + dir)
     for i in images:
         image = pygame.image.load(dir+i)
-        image = pygame.transform.scale2x(image)
-        image = image.convert_alpha()
+        # image = pygame.transform.scale2x(image)
+        image = pygame.transform.scale(image, (50, 50))
+        # image = image.convert_alpha()
         arr.append([image, image.get_rect()])
     return arr
     
@@ -24,10 +25,7 @@ class Player(pygame.sprite.Sprite):
         self.images = load_images("warrior-set/individual-sprite/Run/", -1)
         self.image, self.rect = self.images[self.current_frame]
         self.origin = self.image
-        self.screen = pygame.display.get_surface()
         self.step = 10
-        self.margin = 12
-        self.area = self.screen.get_rect()
         self.xsteps = self.step
         self.ysteps = 0
         self.jumpCount = 6
@@ -49,88 +47,80 @@ class Player(pygame.sprite.Sprite):
                 "bottom": 0,
             }
         self.orientation = "right"
-        self.coins = 0
-        self.F = ( 0.25 * self.m * pow(self.vel, 2) )
-        self.collision = ""
+        self.F = ( 0.175 * self.m * pow(self.vel, 2) )
 
     def jump(self):
         if self.jumpCount > 0:
             self.jumpCount -= 1
-            if self.vel > 8:
+            if self.vel > 9:
                 self.ysteps = -self.F
                 self.vel -= 1
             else:
                 return
-    def detect_collision(self, tiles=pygame.sprite.Group()):
+    
+    def detect_collision(self, tiles):
         self.collision_sides = {
             "right": 0,
             "left": 0,
             "top": 0,
             "bottom": 0,
         }
-        collided = pygame.sprite.spritecollide(self, tiles, False, pygame.sprite.collide_mask )
-        for collision in collided:
-            # print(self.rect.top , collision.rect.bottom)
-            if self.xsteps != 0:
-                print("move x")
-                if collision.rect.collidepoint(self.rect.midright):
-                    print("right")
-                    self.xsteps = 0
-                    self.rect.right = collision.rect.left
-                    self.collision_sides["right"] = 1
-                elif collision.rect.collidepoint(self.rect.midleft):
-                    self.xsteps = 0
-                    self.rect.left = collision.rect.right
-                    self.collision_sides["left"] = 1
-            if self.ysteps != 0:
+
+        self.rect.move_ip((self.xsteps, self.ysteps))
+        col = pygame.sprite.spritecollide(self, tiles, False)
+
+        for collision in tiles:
+            if self.rect.colliderect(collision.rect):
                 if self.ysteps > 0:
-                    self.ysteps = 0
-                    self.vel = 10
                     self.rect.bottom = collision.rect.top
                     self.collision_sides["bottom"] = 1
-                elif self.ysteps < 0:
                     self.ysteps = 0
-                    self.vel = 10
+                elif self.ysteps < 0:
                     self.rect.top = collision.rect.bottom
                     self.collision_sides["top"] = 1
-        print(self.collision_sides)
-        return self.collision_sides
+                    self.ysteps = 0
+        col = pygame.sprite.spritecollide(self, tiles, False)
+        for collision in tiles:
+            if self.rect.colliderect(collision.rect):
+                if self.xsteps > 0:
+                    self.rect.right = collision.rect.left
+                    self.collision_sides["right"] = 1
+                    self.xsteps = 0
+                elif self.xsteps < 0:
+                    self.rect.left = collision.rect.right
+                    self.collision_sides["left"] = 1
+                    self.xsteps = 0
+        # print(self.collision_sides)
     
     def gravity(self):
-        if self.collision_sides["bottom"] == 0:
-            self.ysteps += self.step
+        # if self.vel < 8:
+        #     return
+        if self.collision_sides["bottom"] == 1  :
+            self.vel = 10
+        if self.ysteps < 60:
+            self.ysteps += 9
+            print(self.ysteps)
+                # self.vel -= 1
+        else:
+            self.ysteps = 60
 
-    def key_move(self):
-        direction = {
-            "right": 0,
-            "left": 0,
-            "top": 0,
-            "bottom": 0,
-        }
+    def move(self, tiles):
+        
         if self.state == "dead":
             return
-        key_pressed = pygame.key.get_pressed()
-        mouse = pygame.mouse.get_pressed()
+
         self.state = "running"
-        if key_pressed[pygame.K_x] or mouse[0]:
-            self.hit()
-        if key_pressed[pygame.K_DOWN] or key_pressed[pygame.K_s]:
+        if self.direction["bottom"] == 1 :
             self.ysteps = self.step * 2
-            direction["bottom"] = 1
-        if key_pressed[pygame.K_UP] or key_pressed[pygame.K_w]:
-            self.ysteps = -self.step
-            direction["top"] = 1
-        if key_pressed[pygame.K_LEFT] or key_pressed[pygame.K_a]:
+        if self.direction["top"] == 1 :
+            self.ysteps = -3*self.step
+        if self.direction["left"] == 1 :
             self.xsteps = -self.step
-            direction["left"] = 1
-        if key_pressed[pygame.K_RIGHT] or key_pressed[pygame.K_d]:
+        if self.direction["right"] == 1 :
             self.xsteps = self.step
-            direction["right"] = 1
-        if key_pressed[pygame.K_SPACE]:
-            self.jump()
-        if not key_pressed:
-            self.state = "idle"
-        self.direction = direction
+        self.gravity()
+        self.detect_collision(tiles)
+        # self.rect.move_ip((self.xsteps, self.ysteps))
 
     def hit(self):
         self.hitting = 1
@@ -152,22 +142,9 @@ class Player(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(center=center)
 
     def update(self, tiles):
-        newpos = self.rect.move((self.xsteps, self.ysteps))
+        # newpos = self.rect.move((self.xsteps, self.ysteps))
         
-        if self.state == "idle":
-            self.xsteps = 0
-            self.ysteps = 0
-            self.direction = {
-                "right": 0,
-                "left": 0,
-                "top": 0,
-                "bottom": 0,
-            }
-
         self.current_frame += 1
-        
-        if self.state == "idle":
-            self.images = load_images("warrior-set/individual-sprite/Idle/", -1)
         if self.direction["right"] == 1:
             self.orientation = "right"
             self.images = load_images("warrior-set/individual-sprite/Run/", -1)
@@ -184,6 +161,8 @@ class Player(pygame.sprite.Sprite):
             self.images = load_images("warrior-set/individual-sprite/Death-Effect/", -1)
             # self.images = load_images("warrior-set/individual-sprite/Hurt-Effect/", -1)
             self.xsteps = 0
+            if self.current_frame == len(self.images) - 1:
+                return
         if self.hitting == 1:
             self.images = load_images("warrior-set/individual-sprite/Attack/", -1)
 
@@ -192,11 +171,19 @@ class Player(pygame.sprite.Sprite):
                 self.current_frame = len(self.images)-1
             else:
                 self.current_frame = 0
-        self.image, self.rect = self.images[self.current_frame]
+        self.image = self.images[self.current_frame][0]
         if self.orientation == "left":
             self.image = pygame.transform.flip(self.image, True, False)
         
+        if self.state == "idle":
+            self.xsteps = 0
+            # self.ysteps = 0
+            self.direction = {
+                "right": 0,
+                "left": 0,
+                "top": 0,
+                "bottom": 0,
+            }
+            self.images = load_images("warrior-set/individual-sprite/Idle/", -1)
         # update player position
-        self.rect = newpos
-        self.gravity()
-        self.detect_collision(tiles)
+        self.move(tiles)

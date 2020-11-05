@@ -27,34 +27,76 @@ sprite = pygame.sprite.RenderPlain(player)
 wsprite = pygame.sprite.RenderPlain(widget)
 
 while True:
-    keys = pygame.key.get_pressed()
+    
+    # print(">>>>>>>>>>>")
+    # print("start here")
+    # count = 0
+    # count+=1
+    # print("count: {}".format(count))
+    
+    key_pressed = pygame.key.get_pressed()
     mouse = pygame.mouse.get_pressed()
-    if keys[K_ESCAPE]:
-        quit()
-    if 1 in keys or 1 in mouse:
-        player.key_move()
-    else:
+    
+    if key_pressed[pygame.K_DOWN] or key_pressed[pygame.K_s]:
+        player.direction["bottom"] = 1
+    if key_pressed[pygame.K_UP] or key_pressed[pygame.K_w]:
+        player.direction["top"] = 1
+    if key_pressed[pygame.K_LEFT] or key_pressed[pygame.K_a]:
+        player.direction["left"] = 1
+    if key_pressed[pygame.K_RIGHT] or key_pressed[pygame.K_d]:
+        player.direction["right"] = 1
+    if key_pressed[pygame.K_SPACE]:
+        player.jump()
+    if key_pressed[pygame.K_x] or mouse[0]:
+        player.hit()
+    if not key_pressed:
         player.state = "idle"
-    game.clock.tick(20)
+    if key_pressed[K_ESCAPE]:
+        quit()
     for event in pygame.event.get():
         if event.type == QUIT:
             quit()
         elif event.type == KEYDOWN:
-            # if event.key == pygame.K_SPACE:
-            #     player.jump()
             if event.key == pygame.K_z:
                 player.throw(widget)
-        elif event.type == KEYUP or event.type == MOUSEBUTTONUP:
-            player.state = "idle"
-            player.hitting = 0
-            if event.key == pygame.K_SPACE:
-                player.jumpCount = 6
+        else:
+            if event.type == KEYUP:
+                player.state = "idle"
+                player.hitting = 0
+                if event.key == pygame.K_SPACE:
+                    player.jumpCount = 6
+            if event.type == MOUSEBUTTONUP:
+                if event.button == 1:
+                    player.state = "idle"
+                    player.hitting = 0
+
+    enemy.update()
+    enemy.rect.clamp_ip(screen.get_rect())
+    enemy.move()
+
+    screen.blit(game.bgimg, (0,0))
+    lvl_tiles.draw(screen)
+    
+    player.update(lvl_tiles)
+    player.rect.clamp_ip(screen.get_rect())
+    sprite.draw(screen)
+    enemy_group.draw(screen)
+    screen.blit(game_text, textpos)
+
+    hit_list = []
+    for tile in lvl_tiles:
+        if player.rect.colliderect(tile):
+            # hit_list.append(tile)
+            clip = player.rect.clip(tile.rect)
+            pygame.draw.rect(screen, pygame.Color('red'), clip)
+            print("clip: {}, {}".format(clip.bottom, clip.top))
+    # hit_list = pygame.sprite.spritecollide(player, lvl_tiles, False )
 
     # collisions
-    widget_collide = pygame.sprite.spritecollide(widget, enemy_group, True, pygame.sprite.collide_mask )
+    widget_collide = pygame.sprite.spritecollide(widget, enemy_group, True )
     if widget_collide:
         widget.active = False
-    collided = pygame.sprite.spritecollide(player, enemy_group, False, pygame.sprite.collide_mask )
+    collided = pygame.sprite.spritecollide(player, enemy_group, False)
     if collided:
         if player.hitting == 1:
             enemy.state == "dead"
@@ -62,19 +104,11 @@ while True:
         else:
             player.state = "dead"
 
-    player.update(lvl_tiles)
-    player.rect.clamp_ip(screen.get_rect())
-    enemy.update()
-    enemy.rect.clamp_ip(screen.get_rect())
-
     # screen.fill(game.bgcolor)
-    screen.blit(game.bgimg, (0,0))
     if widget.active == True:
         wsprite.draw(screen)
         widget.move()
-    enemy.move()
-    sprite.draw(screen)
-    lvl_tiles.draw(screen)
-    enemy_group.draw(screen)
-    screen.blit(game_text, textpos)
+
     pygame.display.flip()
+    
+    game.clock.tick(20)
