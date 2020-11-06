@@ -102,7 +102,8 @@ while True:
             enemy.state == "dead"
             enemy_group.remove(collided[0])
         else:
-            player.state = "dead"
+            player.state = "hurt"
+            player.hurt()
 
     # screen.fill(game.bgcolor)
     if widget.active == True:

@@ -34,6 +34,7 @@ class Player(pygame.sprite.Sprite):
         self.m = 2
         self.hitting = 0
         self.degrees = 0
+        self.health = 5
         self.direction = {
                 "right": 0,
                 "left": 0,
@@ -66,19 +67,9 @@ class Player(pygame.sprite.Sprite):
             "bottom": 0,
         }
 
-        self.rect.move_ip((self.xsteps, self.ysteps))
-        col = pygame.sprite.spritecollide(self, tiles, False)
+        self.rect.move_ip((self.xsteps, 0))
+        
 
-        for collision in tiles:
-            if self.rect.colliderect(collision.rect):
-                if self.ysteps > 0:
-                    self.rect.bottom = collision.rect.top
-                    self.collision_sides["bottom"] = 1
-                    self.ysteps = 0
-                elif self.ysteps < 0:
-                    self.rect.top = collision.rect.bottom
-                    self.collision_sides["top"] = 1
-                    self.ysteps = 0
         col = pygame.sprite.spritecollide(self, tiles, False)
         for collision in tiles:
             if self.rect.colliderect(collision.rect):
@@ -90,19 +81,28 @@ class Player(pygame.sprite.Sprite):
                     self.rect.left = collision.rect.right
                     self.collision_sides["left"] = 1
                     self.xsteps = 0
+        self.rect.move_ip((0,self.ysteps))
+        col = pygame.sprite.spritecollide(self, tiles, False)
+        for collision in tiles:
+            if self.rect.colliderect(collision.rect):
+                if self.ysteps > 0:
+                    self.rect.bottom = collision.rect.top
+                    self.collision_sides["bottom"] = 1
+                    self.ysteps = 0
+                elif self.ysteps < 0:
+                    self.rect.top = collision.rect.bottom
+                    self.collision_sides["top"] = 1
+                self.ysteps = 0
         # print(self.collision_sides)
     
     def gravity(self):
-        # if self.vel < 8:
-        #     return
         if self.collision_sides["bottom"] == 1  :
             self.vel = 10
-        if self.ysteps < 60:
-            self.ysteps += 9
-            print(self.ysteps)
-                # self.vel -= 1
         else:
-            self.ysteps = 60
+            if self.ysteps < 60:
+                self.ysteps += 9
+            else:
+                self.ysteps = 60
 
     def move(self, tiles):
         
@@ -118,9 +118,8 @@ class Player(pygame.sprite.Sprite):
             self.xsteps = -self.step
         if self.direction["right"] == 1 :
             self.xsteps = self.step
-        self.gravity()
         self.detect_collision(tiles)
-        # self.rect.move_ip((self.xsteps, self.ysteps))
+        self.gravity()
 
     def hit(self):
         self.hitting = 1
@@ -141,9 +140,15 @@ class Player(pygame.sprite.Sprite):
             self.image = pygame.transform.rotate(self.original, self.degrees)
         self.rect = self.image.get_rect(center=center)
 
+    def hurt(self):
+        print(self.health)
+        if self.health == 0:
+            self.state = "dead"
+        else:
+            self.health -= 1
+
     def update(self, tiles):
-        # newpos = self.rect.move((self.xsteps, self.ysteps))
-        
+
         self.current_frame += 1
         if self.direction["right"] == 1:
             self.orientation = "right"
@@ -157,6 +162,8 @@ class Player(pygame.sprite.Sprite):
             self.images = load_images("warrior-set/individual-sprite/Fall/", -1)
         if self.direction["top"] == 1:
             self.images = load_images("warrior-set/individual-sprite/Jump/", -1)
+        if self.state == "hurt":
+            self.images = load_images("warrior-set/individual-sprite/Hurt-Effect/", -1)
         if self.state == "dead":
             self.images = load_images("warrior-set/individual-sprite/Death-Effect/", -1)
             # self.images = load_images("warrior-set/individual-sprite/Hurt-Effect/", -1)
@@ -177,7 +184,6 @@ class Player(pygame.sprite.Sprite):
         
         if self.state == "idle":
             self.xsteps = 0
-            # self.ysteps = 0
             self.direction = {
                 "right": 0,
                 "left": 0,
@@ -185,5 +191,5 @@ class Player(pygame.sprite.Sprite):
                 "bottom": 0,
             }
             self.images = load_images("warrior-set/individual-sprite/Idle/", -1)
-        # update player position
+            
         self.move(tiles)
