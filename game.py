@@ -17,11 +17,11 @@ class Game:
 
     def init(self):
         pygame.init()
-        screen = pygame.display.set_mode((1000,600))
+        # screen = pygame.display.set_mode((1000,600))
+        screen = pygame.display.set_mode((0,0), pygame.FULLSCREEN)
         self.icon.convert_alpha()
         # self.icon.set_colorkey((255,255,255))
         pygame.display.set_icon(self.icon)
-        # screen = pygame.display.set_mode((0,0), pygame.FULLSCREEN)
         pygame.display.set_caption(self.caption)
         self.display_info = pygame.display.Info()
         self.dimensions = [self.display_info.current_w, self.display_info.current_h]

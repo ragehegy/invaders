@@ -10,6 +10,7 @@ def load_images(dir, colorkey=None):
         print('Cannot load images dir:' + dir)
     for i in images:
         image = pygame.image.load(dir+i)
+        image = pygame.transform.scale(image, (50, 50))
         image = image.convert_alpha()
         arr.append([image, image.get_rect()])
     return arr

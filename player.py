@@ -142,10 +142,11 @@ class Player(pygame.sprite.Sprite):
 
     def hurt(self):
         print(self.health)
-        if self.health == 0:
+        if self.health <= 0:
             self.state = "dead"
         else:
-            self.health -= 1
+            return
+        # self.health -= 1
 
     def update(self, tiles):
 

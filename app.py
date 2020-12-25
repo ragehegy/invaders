@@ -13,7 +13,7 @@ player = player.Player()
 enemy = enemy.Enemy()
 widget = widget.Widget()
 
-enemy.rect.top = 650
+enemy.rect.top = game.dimensions[1] - 100
 enemy.rect.left = 600
 
 level = level.Level(game.dimensions[0], game.dimensions[1])
@@ -28,47 +28,42 @@ wsprite = pygame.sprite.RenderPlain(widget)
 
 while True:
     
-    # print(">>>>>>>>>>>")
-    # print("start here")
-    # count = 0
-    # count+=1
-    # print("count: {}".format(count))
-    
     key_pressed = pygame.key.get_pressed()
     mouse = pygame.mouse.get_pressed()
     
-    if key_pressed[pygame.K_DOWN] or key_pressed[pygame.K_s]:
-        player.direction["bottom"] = 1
-    if key_pressed[pygame.K_UP] or key_pressed[pygame.K_w]:
-        player.direction["top"] = 1
-    if key_pressed[pygame.K_LEFT] or key_pressed[pygame.K_a]:
-        player.direction["left"] = 1
-    if key_pressed[pygame.K_RIGHT] or key_pressed[pygame.K_d]:
-        player.direction["right"] = 1
-    if key_pressed[pygame.K_SPACE]:
-        player.jump()
-    if key_pressed[pygame.K_x] or mouse[0]:
-        player.hit()
-    if not key_pressed:
-        player.state = "idle"
-    if key_pressed[K_ESCAPE]:
-        quit()
-    for event in pygame.event.get():
-        if event.type == QUIT:
+    if player.state != "dead":
+        if key_pressed[pygame.K_DOWN] or key_pressed[pygame.K_s]:
+            player.direction["bottom"] = 1
+        if key_pressed[pygame.K_UP] or key_pressed[pygame.K_w]:
+            player.direction["top"] = 1
+        if key_pressed[pygame.K_LEFT] or key_pressed[pygame.K_a]:
+            player.direction["left"] = 1
+        if key_pressed[pygame.K_RIGHT] or key_pressed[pygame.K_d]:
+            player.direction["right"] = 1
+        if key_pressed[pygame.K_SPACE]:
+            player.jump()
+        if key_pressed[pygame.K_x] or mouse[0]:
+            player.hit()
+        if not key_pressed:
+            player.state = "idle"
+        if key_pressed[K_ESCAPE]:
             quit()
-        elif event.type == KEYDOWN:
-            if event.key == pygame.K_z:
-                player.throw(widget)
-        else:
-            if event.type == KEYUP:
-                player.state = "idle"
-                player.hitting = 0
-                if event.key == pygame.K_SPACE:
-                    player.jumpCount = 6
-            if event.type == MOUSEBUTTONUP:
-                if event.button == 1:
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                quit()
+            elif event.type == KEYDOWN:
+                if event.key == pygame.K_z:
+                    player.throw(widget)
+            else:
+                if event.type == KEYUP:
                     player.state = "idle"
                     player.hitting = 0
+                    if event.key == pygame.K_SPACE:
+                        player.jumpCount = 6
+                if event.type == MOUSEBUTTONUP:
+                    if event.button == 1:
+                        player.state = "idle"
+                        player.hitting = 0
 
     enemy.update()
     enemy.rect.clamp_ip(screen.get_rect())
@@ -86,11 +81,9 @@ while True:
     hit_list = []
     for tile in lvl_tiles:
         if player.rect.colliderect(tile):
-            # hit_list.append(tile)
             clip = player.rect.clip(tile.rect)
             pygame.draw.rect(screen, pygame.Color('red'), clip)
             print("clip: {}, {}".format(clip.bottom, clip.top))
-    # hit_list = pygame.sprite.spritecollide(player, lvl_tiles, False )
 
     # collisions
     widget_collide = pygame.sprite.spritecollide(widget, enemy_group, True )
@@ -102,10 +95,11 @@ while True:
             enemy.state == "dead"
             enemy_group.remove(collided[0])
         else:
-            player.state = "hurt"
-            player.hurt()
+            if player.state != "dead":
+                player.state = "hurt"
+                player.health -= 1
+                player.hurt()
 
-    # screen.fill(game.bgcolor)
     if widget.active == True:
         wsprite.draw(screen)
         widget.move()
